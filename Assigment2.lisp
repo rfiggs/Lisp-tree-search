@@ -10,8 +10,8 @@
 ;start, the state to start the search from
 (defun make-globals (start)
     (and
-        (or (boundp '*open*) (defvar *open* (list (list start 'root)) ))
-        (or (boundp '*closed*) (defvar *closed* nil))
+        (defparameter *open* (list (list start 'root)))
+        (defparameter *closed* (list nil))
     )
 )
 
@@ -42,7 +42,7 @@
         )
         (T
             (and
-                (setf *closed* (cons *closed* (car *open*)))
+                (setf *closed* (cons (car *open*) *closed*))
                 (setf *open* (append
                     (cdr *open*)
                     (mapcar
