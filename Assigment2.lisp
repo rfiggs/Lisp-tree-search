@@ -1,16 +1,6 @@
 ;This file implements the breadth first and depth first search algorithms
 
-
-;(defun test ()
-;    (cond
-;        ( (not (and (boundp '*open*) (boundp '*closed*)))
-;            (list (defvar *open* nil) (defvar *closed* nil))
-;        )
-;        (T
-;            nil
-;        )
-;    )
-;)
+(defun testfun (x) (+  x 1))
 
 ;Function: make-globals
 ;Description: creates the global *open* and *closed* lists
@@ -20,10 +10,14 @@
 ;start, the state to start the search from
 (defun make-globals (start)
     (and
-        (or (boundp '*open*) (defvar *open* (list start)))
+        (or (boundp '*open*) (defvar *open* (list (list start 'root)) ))
         (or (boundp '*closed*) (defvar *closed* nil))
     )
 )
+
+;this function returns the state of top node in the open list
+(defun current-state () (car (car *open*)))
+
 
 ;Function: breadth-first-search
 ;Description: uses the global *open* and *closed* lists
@@ -31,23 +25,32 @@
 ;Parameters:
 ;goal, the target that state we are trying to achieve
 ;iteration, the current number of nodes looked at
-;moves, a function that takes a stat as a parameter returns the child states
+;moves, a function that takes a state as a parameter and  returns the child states
 (defun breadth-first-search (goal iteration moves)
     (cond
-        ((equal 0 (length *open*))
+        ((> 0 (length *open*))
             nil
         )
-        ((equal goal (car (car *open*)))
+        ((member (current-state) (mapcar #'car *closed*))
+            (and
+                (setf *open* (cdr *open*))
+                (breadth-first-search goal (+ 1 iteration) moves)
+            )
+        )
+        ((equal goal (current-state))
             (car *open*)
         )
         (T
-            (cond
-                (()
-
-                )
-                (T
-
-                )
+            (and
+                (setf *closed* (cons *closed* (car *open*)))
+                (setf *open* (append
+                    (cdr *open*)
+                    (mapcar
+                        (lambda (x) (list (list x) (list (current-state))))
+                        (mapcar moves (list (current-state)))
+                    )
+                ))
+                (breadth-first-search goal (+ 1 iteration) moves)
             )
         )
     )
@@ -71,7 +74,7 @@
         )
         ;something went wrong creating the variables
         (T
-            nil
+            (and (write 'somethingwrong))
         )
     )
 )
