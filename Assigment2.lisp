@@ -8,7 +8,6 @@
         (cond
             ((< 0 (- x 1)) (- x 1))
         )
-        3
     )
 )
 
@@ -47,10 +46,13 @@
 (defun make-children (parent-state moves)
     (mapcar
         (lambda (x) (list x parent-state))
-        (remove nil (remove-if (lambda (x) (or (member x (mapcar #'car *open*)) (member x (mapcar #'car *closed*))))
-            (eval (list moves parent-state))
-        ))
-
+         (remove-if
+             (lambda (x) (or
+                (member x (mapcar #'car *open*) :test #'equal)
+                (member x (mapcar #'car *closed*) :test #'equal)
+            ))
+            (remove nil (eval  (list moves (list 'quote parent-state))))
+        )
     )
 )
 
@@ -115,12 +117,6 @@
             nil
         )
         ((print-node (car *open*)))
-        ((member (top-state *open*) (mapcar #'car *closed*))
-            (and
-                (setf *open* (cdr *open*))
-                (breadth-first-search goal (+ 1 iteration) moves)
-            )
-        )
         ((equal goal (top-state *open*))
             (car *open*)
         )
@@ -142,21 +138,24 @@
 ;Description: sets up the open and closed lists then calls
 ;the recursive function breadth-first-search to find a path to the goal state
 ;Parameters:
-;start, a list containing the start state
-;goal, a list containing the goal state
-;moves, a function that takes a state and returns its valid children.
+;game, is a list with three elements where
+;(first game), is the start state
+;(second game), is the goal state
+;(third game), is a function that takes a state and returns its valid children.
 ;Returns:
 ;the path from the start state to goal if it exists, otherwise nil
-(defun breadth-first (start goal moves)
-    (cond
-        ;if the global variables are correctly made then call
-        ;breath-first-search which is the recursive function that finds the path
-        ((make-globals start)
-            (print-solution (solution-path (breadth-first-search goal 0 moves)))
-        )
-        ;something went wrong creating the variables
-        (T
-            nil
+(defun breadth-first (game)
+    (let ((start (first game)) (goal (second game)) (moves (third game)))
+        (cond
+            ;if the global variables are correctly made then call
+            ;breath-first-search which is the recursive function that finds the path
+            ((make-globals start)
+                (print-solution (solution-path (breadth-first-search goal 0 moves)))
+            )
+            ;something went wrong creating the variables
+            (T
+                nil
+            )
         )
     )
 )
@@ -174,12 +173,6 @@
             nil
         )
         ((print-node (car *open*)))
-        ((member (top-state *open*) (mapcar #'car *closed*))
-            (and
-                (setf *open* (cdr *open*))
-                (breadth-first-search goal (+ 1 iteration) moves)
-            )
-        )
         ((equal goal (top-state *open*))
             (car *open*)
         )
@@ -220,4 +213,54 @@
     )
 )
 
-;This is the state representation for the farmer goat and cabbage puzzle.
+;This is the state representation for the farmer, the wolf, the goat and the cabbage puzzle.
+;a state is a list containing 4 elements (wolf goat cabbage near-shore)
+;all four items are either t or nil
+;wolf, goat, and cabbage, are t when the farmer is on the same side of the river as them otherwise nil
+;near-shore is true if the farmer is on the near-shore otherwise false.
+;start state
+;(t t t t)
+;goal state
+;(nil nil nil nil)
+;illegal states
+;(nil nil t t|nil) (t nil nil t|nil) (nil nil nil t|nil)
+
+;Function: fwgc-children
+;Description: This functions generates child nodes for the farmer, wolf, goat, and cabbage game
+;it takes a state as a parameter and generates the legal child states
+;Parameters: state
+;Returns: a list of legal child states
+(defun fwgc-children (state)
+    (let ((wolf (first state)) (goat (second state)) (cabbage (third state)) (next-shore (not (fourth state)) ))
+        (remove-if (lambda (x) (not (or (second x) (and (first x) (third x)))))
+            (remove nil (list
+                ;farmer does not taking anything
+                (list (not wolf) (not goat) (not cabbage) next-shore)
+                ;farmer takes wolf if has wolf
+                (cond (wolf
+                    (list  wolf (not goat) (not cabbage) next-shore)
+                ))
+                ;farmer takes goat if has goat
+                (cond (goat
+                    (list (not wolf) goat (not cabbage) next-shore)
+                ))
+                ;farmer takes cabbage if has cabbage
+                (cond (cabbage
+                    (list (not wolf) (not goat) cabbage next-shore)
+                ))
+            ))
+        )
+    )
+)
+
+;Function: fwgc
+;Description: This functions returns a list which represents
+;the farmer, wolf, goat, and the cabbage game
+;where the first item is the start state,
+;the second is the goal sate,
+;and the third is a function that takes a state and generates the legal child states
+;Parameters: none
+;Returns: a list containing the game representation
+(defun fwgc ()
+    '( (t t t t) (t t t nil) fwgc-children)
+)
