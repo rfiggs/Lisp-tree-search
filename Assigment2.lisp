@@ -324,8 +324,7 @@
 )
 
 ;Function: water-jugs
-;Description: This functions returns a list which represents
-;the farmer, wolf, goat, and the cabbage game
+;Description: This functions returns a list which represents the water jugs puzzle
 ;where the first item is the start state,
 ;the second is the goal sate,
 ;and the third is a function that takes a state and generates the legal child states
@@ -333,4 +332,88 @@
 ;Returns: a list containing the game representation
 (defun water-jugs ()
     '((0 0) (1 0) water-jugs-children)
+)
+
+;*******************************************************************************************
+;8-tile puzzle
+;*******************************************************************************************
+;This is the state representation for the 8-tile puzzle
+;the puzzle can be found at http://www.tilepuzzles.com/default.asp?p=12
+;a state is a list containing 9 elements
+;the position in the lists represents the position on the grid
+;and the value of the element represents the tile that is in that position
+;a value of 0 is used to represent the blank space
+;e.g.
+;|6|7|8|
+;|3|4|5|
+;|0|1|2|
+;will be represented as
+;(0 1 2 3 4 5 6 7 8)
+;Since this puzzle does not have a set start and end state
+;you must provide them to the 8-tile function when you use it
+
+;Function: 8-tile-children
+;Description: This functions generates child nodes for the 8-tile puzzle
+;it takes a state as a parameter and generates the legal child states
+;Parameters:
+;a state of the 8-tile puzzle
+;Returns: a list of legal child states
+(defun 8-tile-children (state)
+    (let ((x (mod (position 0 state) 3)) (y (/ (- (position 0 state) (mod (position 0 state) 3)) 3)))
+        (remove nil (list
+            ;swap with tile above
+            (cond ((< x 2)
+                (swap (position 0 state) (+ (* 3 y) (1+ x))  state)
+            ))
+            ;swap with tile below
+            (cond ((> x 0)
+                (swap (position 0 state) (+ (* 3 y) (1- x))  state)
+            ))
+            ;swap with tile right
+            (cond ((< y 2)
+                (swap (position 0 state) (+ (* 3 (1+ y)) x)  state)
+            ))
+            ;swap with tile left
+            (cond ((> y 0)
+                (swap (position 0 state) (+ (* 3 (1- y)) )  state)
+            ))
+        ))
+    )
+)
+
+;Function: swap
+;Description: This functions swaps two items in a list
+;note this only works if there are no duplicate values
+;Parameters:
+;i, the index of the first item to swap
+;j, the index of the second item to swap
+;l, the list which elements are being swapped
+;Returns: a list where the given indexes have been swapped
+(defun swap (i j l)
+    (mapcar (lambda (x)
+        (cond
+            ((equal (position x l) i)
+                (elt l j)
+            )
+            ((equal (position x l) j)
+                (elt l i)
+            )
+            (t
+                x
+            )
+        )
+    ) l)
+)
+
+;Function: 8-tile
+;Description: This functions returns a list which represents the 8-tile puzzle
+;where the first item is the start state,
+;the second is the goal sate,
+;and the third is a function that takes a state and generates the legal child states
+;Parameters:
+;start, a state representing the start state of the puzzle
+;goal, a state representing the goal state of the puzzle
+;Returns: a list containing the game representation
+(defun 8-tile (start goal)
+    (list start goal '8-tile-children)
 )
