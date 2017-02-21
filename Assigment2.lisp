@@ -192,46 +192,52 @@
 
 ;Function: depth-first
 ;Description: sets up the open and closed lists then calls
-;the recursive function depth-first-search to find a path to the goal state
+;the recursive function breadth-first-search to find a path to the goal state
 ;Parameters:
-;start, a list containing the start state
-;goal, a list containing the goal state
-;moves, a function that takes a state and returns its valid children.
+;game, is a list with three elements where
+;(first game), is the start state
+;(second game), is the goal state
+;(third game), is a function that takes a state and returns its valid children.
 ;Returns:
 ;the path from the start state to goal if it exists, otherwise nil
-(defun depth-first (start goal moves)
-    (cond
-        ;if the global variables are correctly made then call
-        ;depth-first-search which is the recursive function that finds the path
-        ((make-globals start)
-            (depth-first-search goal 0 moves)
-        )
-        ;something went wrong creating the variables
-        (T
-            nil
+(defun depth-first (game)
+    (let ((start (first game)) (goal (second game)) (moves (third game)))
+        (cond
+            ;if the global variables are correctly made then call
+            ;breath-first-search which is the recursive function that finds the path
+            ((make-globals start)
+                (print-solution (solution-path (depth-first-search goal 0 moves)))
+            )
+            ;something went wrong creating the variables
+            (T
+                nil
+            )
         )
     )
 )
-
+;*******************************************************************************************
+;Farmer Wolf Goat Cabbage Puzzle
+;*******************************************************************************************
 ;This is the state representation for the farmer, the wolf, the goat and the cabbage puzzle.
+;the puzzle can be found at http://www.mathsisfun.com/puzzles/farmer-crosses-river.html
 ;a state is a list containing 4 elements (wolf goat cabbage near-shore)
 ;all four items are either t or nil
 ;wolf, goat, and cabbage, are t when the farmer is on the same side of the river as them otherwise nil
-;near-shore is true if the farmer is on the near-shore otherwise false.
+;near-shore is true if the farmer is on the near shore otherwise false when the farmer is on the far shore
 ;start state
 ;(t t t t)
 ;goal state
-;(nil nil nil nil)
-;illegal states
-;(nil nil t t|nil) (t nil nil t|nil) (nil nil nil t|nil)
+;(t t t nil)
 
 ;Function: fwgc-children
-;Description: This functions generates child nodes for the farmer, wolf, goat, and cabbage game
+;Description: This functions generates child nodes for the farmer, wolf, goat, and cabbage puzzle
 ;it takes a state as a parameter and generates the legal child states
-;Parameters: state
+;Parameters:
+;a state of the fwgc puzzle
 ;Returns: a list of legal child states
 (defun fwgc-children (state)
     (let ((wolf (first state)) (goat (second state)) (cabbage (third state)) (next-shore (not (fourth state)) ))
+        ;this will remove the illegal states
         (remove-if (lambda (x) (not (or (second x) (and (first x) (third x)))))
             (remove nil (list
                 ;farmer does not taking anything
@@ -263,4 +269,68 @@
 ;Returns: a list containing the game representation
 (defun fwgc ()
     '( (t t t t) (t t t nil) fwgc-children)
+)
+
+;*******************************************************************************************
+;Water Jugs Puzzle
+;*******************************************************************************************
+;This is the state representation for the water jugs puzzle
+;the puzzle can be found at http://www.math.tamu.edu/~dallen/hollywood/diehard/diehard.htm
+;a state is a list containing 2 elements (4gallon 11gallon)
+;each has an integer representing the current volume of water in the container
+;4gallon can be any integer from 0 to 4
+;11gallon can be any integer from 0 to 11
+;start state
+;(0 0)
+;goal state
+;(1 0)
+;note that this goal technically means 1 gallon in the 4 gallon jug and 0 in the 11 gallon jug
+;but the problem asks for 1 gallon in any jug and any amount in the other.
+;This is a trivial difference because once you have one gallon in either jug,
+;you can simply empty out the other jug, and then transfer the water
+;to the 4 gallon jug
+
+;Function: water-jugs-children
+;Description: This functions generates child nodes for the water jugs puzzle
+;it takes a state as a parameter and generates the legal child states
+;Parameters:
+;a state of the water jugs puzzle
+;Returns: a list of legal child states
+(defun water-jugs-children (state)
+    (let ((4gallon (first state)) (11gallon (second state)))
+        ;remove any child state that is the same as the parent
+        (remove state
+            (list
+                ;fill up 4 gallon from water source
+                (list 4 11gallon)
+                ;fill up 11 gallon from water source
+                (list 4gallon 11)
+                ;empty out 4 gallon
+                (list 0 11gallon)
+                ;empty out 11 gallon
+                (list 4gallon 0)
+                ;pour 4 gallon into 11 gallon
+                (let ((diff (min (- 11 11gallon) 4gallon)))
+                    (list (- 4gallon diff) (+ 11gallon diff))
+                )
+                ;pour 11gallon into 4 gallon
+                (let ((diff (min (- 4 4gallon) 11gallon)))
+                    (list (+ 4gallon diff) (- 11gallon diff))
+                )
+            )
+        ;test for removing parent state from children
+        :test #'equal)
+    )
+)
+
+;Function: water-jugs
+;Description: This functions returns a list which represents
+;the farmer, wolf, goat, and the cabbage game
+;where the first item is the start state,
+;the second is the goal sate,
+;and the third is a function that takes a state and generates the legal child states
+;Parameters: none
+;Returns: a list containing the game representation
+(defun water-jugs ()
+    '((0 0) (1 0) water-jugs-children)
 )
