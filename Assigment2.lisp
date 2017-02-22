@@ -106,7 +106,7 @@
 ;moves, a function that takes a state as a parameter and  returns the child states
 (defun breadth-first-search (goal iteration moves)
     (cond
-        ((> 0 (length *open*))
+        ((>= 0 (length *open*))
             nil
         )
         ((print-node (car *open*)))
@@ -153,7 +153,7 @@
 ;moves, a function that takes a state as a parameter and  returns the child states
 (defun depth-first-search (goal iteration moves)
     (cond
-        ((> 0 (length *open*))
+        ((>= 0 (length *open*))
             nil
         )
         ((print-node (car *open*)))
@@ -168,7 +168,7 @@
                     (cdr *open*)
                 )
             )
-            (breadth-first-search goal (+ 1 iteration) moves)
+            (depth-first-search goal (+ 1 iteration) moves)
         )
     )
 )
