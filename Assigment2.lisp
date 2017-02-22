@@ -1,28 +1,21 @@
 ;This file implements the breadth first and depth first search algorithms
+;It also implements three logic puzzles which the algorithms can search over
+;The farmer, the wolf, the goat, and the cabbage
+;The water jugs puzzle
+;and the 8 tile puzzle
+;to run one of the search algorithms you can simply call
+;(search-method (puzzle))
+;for example if you want to run the breadth first search on the water jugs puzzle
+;(breadth-first (water-jugs))
+;note that the 8 tile game needs a start state and an end state to work
+;for example
+;(depth-first (8-tile '(0 1 2 3 4 5 6 7 8) '(8 7 6 5 4 3 2 1 0)))
+;see the 8-tile description below for more details
 
-(defun testfun (x)
-    (list
-        (cond
-            ((> 100 (+ x 1)) (+ x 1))
-        )
-        (cond
-            ((< 0 (- x 1)) (- x 1))
-        )
-    )
-)
-
-;Function: make-globals
-;Description: creates the global *open* and *closed* lists
-;these lists contain nodes in the following format
-;((state)(parent-state))
-;Parameters:
-;start, the state to start the search from
-(defun make-globals (start)
-    (and
-        (defparameter *open* (list (list start nil)))
-        (defparameter *closed* nil)
-    )
-)
+;the open list used by the search algorithms
+(defvar *open* nil)
+;the closed list used by the search algorithms
+(defvar *closed* nil)
 
 ;Function: top-state
 ;Description: retrieves the state of the top node on the given list
@@ -133,7 +126,6 @@
     )
 )
 
-
 ;Function: breadth-first
 ;Description: sets up the open and closed lists then calls
 ;the recursive function breadth-first-search to find a path to the goal state
@@ -146,17 +138,9 @@
 ;the path from the start state to goal if it exists, otherwise nil
 (defun breadth-first (game)
     (let ((start (first game)) (goal (second game)) (moves (third game)))
-        (cond
-            ;if the global variables are correctly made then call
-            ;breath-first-search which is the recursive function that finds the path
-            ((make-globals start)
-                (print-solution (solution-path (breadth-first-search goal 0 moves)))
-            )
-            ;something went wrong creating the variables
-            (T
-                nil
-            )
-        )
+        (setf *open* (list (list start nil)))
+        (setf *closed* nil)
+        (print-solution (solution-path (breadth-first-search goal 0 moves)))
     )
 )
 
@@ -177,14 +161,14 @@
             (car *open*)
         )
         (T
-            (and
-                (setf *closed* (cons (car *open*) *closed*))
-                (setf *open* (append
+            (setf *closed* (cons (car *open*) *closed*))
+            (setf *open*
+                (append
                     (make-children (top-state *open*) moves)
                     (cdr *open*)
-                ))
-                (breadth-first-search goal (+ 1 iteration) moves)
+                )
             )
+            (breadth-first-search goal (+ 1 iteration) moves)
         )
     )
 )
@@ -202,17 +186,9 @@
 ;the path from the start state to goal if it exists, otherwise nil
 (defun depth-first (game)
     (let ((start (first game)) (goal (second game)) (moves (third game)))
-        (cond
-            ;if the global variables are correctly made then call
-            ;breath-first-search which is the recursive function that finds the path
-            ((make-globals start)
-                (print-solution (solution-path (depth-first-search goal 0 moves)))
-            )
-            ;something went wrong creating the variables
-            (T
-                nil
-            )
-        )
+        (setf *open* (list (list start nil)))
+        (setf *closed* nil)
+        (print-solution (solution-path (depth-first-search goal 0 moves)))
     )
 )
 ;*******************************************************************************************
