@@ -14,6 +14,7 @@
 
 ;the open list used by the search algorithms
 (defvar *open* nil)
+
 ;the closed list used by the search algorithms
 (defvar *closed* nil)
 
@@ -84,7 +85,7 @@
 ;Description: prints the length of *open* and *closed* and the solution path
 ;Parameters:
 ;path, a list of states from start to goal
-;Return: nil
+;Return: the path
 (defun print-solution (path)
     (cond
         ((format t "~&Length of *open*: ~a" (length *open*)))
@@ -99,9 +100,9 @@
 
 ;Function: breadth-first-search
 ;Description: uses the global *open* and *closed* lists
-;to find a path to the goal from the start
+;to find a path to the goal from the start using the breadth first search strategy
 ;Parameters:
-;goal, the target that state we are trying to achieve
+;goal, the target state that we are trying to achieve
 ;iteration, the current number of nodes looked at
 ;moves, a function that takes a state as a parameter and  returns the child states
 (defun breadth-first-search (goal iteration moves)
@@ -146,9 +147,9 @@
 
 ;Function: depth-first-search
 ;Description: uses the global *open* and *closed* lists
-;to find a path to the goal from the start
+;to find a path to the goal from the start using the depth first search strategy
 ;Parameters:
-;goal, the target that state we are trying to achieve
+;goal, the target state that we are trying to achieve
 ;iteration, the current number of nodes looked at
 ;moves, a function that takes a state as a parameter and  returns the child states
 (defun depth-first-search (goal iteration moves)
